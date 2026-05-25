@@ -114,4 +114,3 @@ if user_prompt := st.chat_input("e.g., I am in class 12 in Maharashtra, family i
                 
         except Exception as e:
             st.error(f"System Error: {str(e)}")
-Update scholarship.py layout
