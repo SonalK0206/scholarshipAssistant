@@ -2,14 +2,14 @@ import streamlit as st
 from groq import Groq
 
 # 1. Page Configuration and UI Setup
-st.set_page_config(page_title="Scholarship Finder AI", page_icon="degree", layout="wide")
+st.set_page_config(page_title="Scholarship Finder AI", page_icon="🎓", layout="wide")
 st.title("ScholarAssist: AI Scholarship Matchmaker")
 st.write("Find financial aid, fellowships, and grants tailored to your educational class, field of study, geographical region, income bracket, and gender.")
 
-# Secure sidebar input for the free API key
-groq_key_input = st.sidebar.text_input("Enter Groq API Key", type="password")
+# The app automatically grabs the API key from your secure cloud settings internally
+api_key_to_use = st.secrets.get("GROQ_API_KEY", "")
 
-st.sidebar.markdown("---")
+# Sidebar setup with no API key inputs
 st.sidebar.subheader("Tips for Best Results")
 st.sidebar.write("Provide details such as your Current Class/Standard, Field of Study, State/Region, Annual Family Income, and Gender to unlock specialized matching schemes.")
 
@@ -28,11 +28,13 @@ for msg in st.session_state.messages:
 
 # 3. Handle User Input and Groq API Execution
 if user_prompt := st.chat_input("e.g., I am in class 12 in Maharashtra, family income is 1.5 Lakhs. Any scholarships?"):
-    if not groq_key_input:
-        st.info("Please enter your free Groq API key in the sidebar to start.")
+    
+    # Internal validation to ensure your cloud dashboard has the key configured
+    if not api_key_to_use:
+        st.error("System configuration error: Groq API key missing in cloud secrets.")
         st.stop()
 
-    client = Groq(api_key=groq_key_input)
+    client = Groq(api_key=api_key_to_use)
 
     # Show user message immediately
     st.session_state.messages.append({"role": "user", "content": user_prompt})
@@ -69,13 +71,11 @@ if user_prompt := st.chat_input("e.g., I am in class 12 in Maharashtra, family i
 
             # --- STEP B: ROUTING LOGIC ---
             if "IRRELEVANT" in user_intent:
-                # Politely reject off-topic questions
                 ai_reply = "Please ask questions related only to school/college standards, locations, scholarships, grants, and academic financial assistance. I am here to support your educational funding journey!"
                 st.write(ai_reply)
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
             
             else:
-                # Process valid questions using full conversational memory
                 scholarship_bot_messages = [
                     {
                         "role": "system",
@@ -114,3 +114,4 @@ if user_prompt := st.chat_input("e.g., I am in class 12 in Maharashtra, family i
                 
         except Exception as e:
             st.error(f"System Error: {str(e)}")
+Update scholarship.py layout
